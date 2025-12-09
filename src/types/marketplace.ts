@@ -5,7 +5,7 @@ export type ServiceCategory =
   | 'edicao-post'
   | 'consultoria';
 
-export type ServiceLevel = 'iniciante' | 'intermediario' | 'profissional' | 'expert';
+export type ServiceLevel = 'nivel1' | 'nivel2' | 'nivel3';
 
 export type OrderStatus = 'pendente' | 'em_andamento' | 'revisao' | 'concluido' | 'cancelado';
 

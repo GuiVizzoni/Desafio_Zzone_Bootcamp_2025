@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Clock, Shield, CreditCard, ChevronRight } from 'lucide-react';
 import { MobileLayout } from '@/components/layout/MobileLayout';
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { mockServices } from '@/data/mockData';
 import { useToast } from '@/hooks/use-toast';
+import { trackCheckoutStarted, trackOrderCreated } from '@/lib/n8n';
 
 export default function CheckoutPage() {
   const { id } = useParams();
@@ -21,11 +22,19 @@ export default function CheckoutPage() {
   
   const packageIndex = parseInt(searchParams.get('package') || '0');
   const service = mockServices.find((s) => s.id === id);
+  const selectedPackage = service?.packages[packageIndex];
 
   const [description, setDescription] = useState('');
   const [projectDuration, setProjectDuration] = useState('');
   const [requirements, setRequirements] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
+
+  // Track checkout started
+  useEffect(() => {
+    if (service && selectedPackage) {
+      trackCheckoutStarted(service.id, selectedPackage.id);
+    }
+  }, [service, selectedPackage]);
 
   if (!service) {
     return (
@@ -38,7 +47,16 @@ export default function CheckoutPage() {
     );
   }
 
-  const selectedPackage = service.packages[packageIndex];
+  if (!selectedPackage) {
+    return (
+      <MobileLayout showNav={false}>
+        <Header showBack title="Erro" />
+        <div className="p-4 text-center">
+          <p>Pacote não encontrado.</p>
+        </div>
+      </MobileLayout>
+    );
+  }
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -57,13 +75,24 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Generate order ID
+    const orderId = `o${Date.now()}`;
+    
+    // Track order creation
+    trackOrderCreated(
+      orderId,
+      service.id,
+      selectedPackage.id,
+      selectedPackage.price
+    );
+
     toast({
       title: 'Pedido enviado!',
       description: 'Você será redirecionado para acompanhar seu pedido.',
     });
 
     setTimeout(() => {
-      navigate('/order-tracking/o1');
+      navigate(`/order-tracking/${orderId}`);
     }, 1500);
   };
 

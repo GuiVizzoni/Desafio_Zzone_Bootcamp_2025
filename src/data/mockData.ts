@@ -9,10 +9,9 @@ export const categoryLabels: Record<ServiceCategory, string> = {
 };
 
 export const levelLabels: Record<ServiceLevel, string> = {
-  'iniciante': 'Iniciante',
-  'intermediario': 'Intermediário',
-  'profissional': 'Profissional',
-  'expert': 'Expert',
+  'nivel1': 'Nível 1',
+  'nivel2': 'Nível 2',
+  'nivel3': 'Nível 3',
 };
 
 export const mockServices: Service[] = [
@@ -28,7 +27,7 @@ export const mockServices: Service[] = [
       rating: 4.9,
       reviewCount: 127,
       segment: 'Lifestyle & Moda',
-      level: 'expert',
+      level: 'nivel3',
       verified: true,
       completedProjects: 340,
       responseTime: '1 hora',
@@ -88,7 +87,7 @@ export const mockServices: Service[] = [
       rating: 4.8,
       reviewCount: 85,
       segment: 'Tech & Games',
-      level: 'profissional',
+      level: 'nivel2',
       verified: true,
       completedProjects: 156,
       responseTime: '2 horas',
@@ -147,7 +146,7 @@ export const mockServices: Service[] = [
       rating: 4.95,
       reviewCount: 203,
       segment: 'Marketing Digital',
-      level: 'expert',
+      level: 'nivel3',
       verified: true,
       completedProjects: 420,
       responseTime: '30 min',
@@ -206,7 +205,7 @@ export const mockServices: Service[] = [
       rating: 4.7,
       reviewCount: 92,
       segment: 'Design & Arte',
-      level: 'intermediario',
+      level: 'nivel1',
       verified: false,
       completedProjects: 180,
       responseTime: '3 horas',
@@ -265,7 +264,7 @@ export const mockServices: Service[] = [
       rating: 5.0,
       reviewCount: 48,
       segment: 'Growth & Estratégia',
-      level: 'expert',
+      level: 'nivel3',
       verified: true,
       completedProjects: 98,
       responseTime: '4 horas',

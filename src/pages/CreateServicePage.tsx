@@ -10,8 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { ServiceCategory, ServiceLevel } from '@/types/marketplace';
-import { categoryLabels, levelLabels } from '@/data/mockData';
+import { ServiceCategory } from '@/types/marketplace';
+import { categoryLabels } from '@/data/mockData';
+import { sendN8nEvent } from '@/lib/n8n';
+import { supabase } from '@/lib/supabase';
 
 interface PackageForm {
   name: string;
@@ -28,7 +30,6 @@ export default function CreateServicePage() {
 
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<ServiceCategory | ''>('');
-  const [level, setLevel] = useState<ServiceLevel | ''>('');
   const [description, setDescription] = useState('');
   const [packages, setPackages] = useState<PackageForm[]>([
     { name: 'Básico', description: '', price: '', deliveryDays: '', revisions: '1', features: [''] },
@@ -78,8 +79,8 @@ export default function CreateServicePage() {
     setPackages(updated);
   };
 
-  const handleSubmit = () => {
-    if (!title || !category || !level || !description) {
+  const handleSubmit = async () => {
+    if (!title || !category || !description) {
       toast({
         title: 'Campos obrigatórios',
         description: 'Preencha todos os campos básicos.',
@@ -101,14 +102,59 @@ export default function CreateServicePage() {
       return;
     }
 
-    toast({
-      title: 'Serviço criado!',
-      description: 'Seu serviço foi publicado com sucesso.',
-    });
+    try {
+      // Preparar dados do serviço
+      const serviceData = {
+        title,
+        description,
+        category,
+        packages: packages.map(pkg => ({
+          name: pkg.name,
+          description: pkg.description,
+          price: parseFloat(pkg.price),
+          deliveryDays: parseInt(pkg.deliveryDays),
+          revisions: parseInt(pkg.revisions),
+          features: pkg.features.filter(f => f.trim() !== ''),
+        })),
+        createdAt: new Date().toISOString(),
+      };
 
-    setTimeout(() => {
-      navigate('/dashboard');
-    }, 1500);
+      // Enviar para n8n webhook (que depois envia para Supabase)
+      const webhookSuccess = await sendN8nEvent('service_created', serviceData);
+
+      // Também salvar diretamente no Supabase como backup
+      const { data, error } = await supabase
+        .from('services')
+        .insert([serviceData])
+        .select();
+
+      if (error) {
+        console.error('Supabase error:', error);
+        // Continua mesmo com erro do Supabase se o webhook funcionou
+        if (!webhookSuccess) {
+          throw new Error('Falha ao criar serviço');
+        }
+      }
+
+      toast({
+        title: 'Serviço criado!',
+        description: 'Seu serviço foi publicado com sucesso.',
+      });
+
+      console.log('Service created:', data);
+      console.log('Webhook sent:', webhookSuccess);
+
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
+    } catch (error) {
+      console.error('Error creating service:', error);
+      toast({
+        title: 'Erro ao criar serviço',
+        description: 'Tente novamente mais tarde.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -140,22 +186,6 @@ export default function CreateServicePage() {
                 {(Object.keys(categoryLabels) as ServiceCategory[]).map((cat) => (
                   <SelectItem key={cat} value={cat}>
                     {categoryLabels[cat]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Seu nível *</Label>
-            <Select value={level} onValueChange={(v) => setLevel(v as ServiceLevel)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione seu nível" />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(levelLabels) as ServiceLevel[]).map((lvl) => (
-                  <SelectItem key={lvl} value={lvl}>
-                    {levelLabels[lvl]}
                   </SelectItem>
                 ))}
               </SelectContent>

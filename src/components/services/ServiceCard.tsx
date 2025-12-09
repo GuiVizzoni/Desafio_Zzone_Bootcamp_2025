@@ -1,4 +1,4 @@
-import { Star, Clock, Users } from 'lucide-react';
+import { Star, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -43,57 +43,61 @@ export function ServiceCard({ service }: ServiceCardProps) {
 
       <div className="p-3">
         {/* Creator Info */}
-        <div className="flex items-center gap-2 mb-2">
-          <Avatar className="h-7 w-7">
+        <div className="flex items-center gap-2 mb-3">
+          <Avatar className="h-8 w-8">
             <AvatarImage src={service.creator.avatar} />
             <AvatarFallback>{service.creator.name[0]}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1">
-              <span className="text-sm font-medium truncate">{service.creator.name}</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-sm font-semibold text-foreground">{service.creator.name}</span>
+              <Badge 
+                variant="outline" 
+                className={cn(
+                  'text-xs font-medium px-1.5 py-0.5',
+                  service.creator.level === 'nivel3' && 'bg-[#fff7e6] border-[#f3d27a] text-[#c08a00]', // ouro
+                  service.creator.level === 'nivel2' && 'bg-[#f7f7f7] border-[#d8d8d8] text-[#7f7f7f]', // prata
+                  service.creator.level === 'nivel1' && 'bg-[#fff5ec] border-[#f1c8a0] text-[#c07232]', // bronze
+                )}
+              >
+                {levelLabels[service.creator.level]}
+              </Badge>
               {service.creator.verified && (
-                <svg className="h-3.5 w-3.5 text-primary fill-current" viewBox="0 0 24 24">
+                <svg className="h-3.5 w-3.5 text-orange-500 fill-current" viewBox="0 0 24 24">
                   <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
                 </svg>
               )}
             </div>
-            <span className="text-xs text-muted-foreground">{service.creator.segment}</span>
+            <span className="text-xs text-muted-foreground mt-0.5">{service.creator.segment}</span>
           </div>
-        </div>
-
-        {/* Title */}
-        <h3 className="font-medium text-sm line-clamp-2 mb-2 min-h-[2.5rem]">
-          {service.title}
-        </h3>
-
-        {/* Rating & Stats */}
-        <div className="flex items-center gap-3 mb-3">
           <div className="flex items-center gap-1">
             <Star className="h-3.5 w-3.5 fill-warning text-warning" />
             <span className="text-sm font-medium">{service.creator.rating}</span>
             <span className="text-xs text-muted-foreground">({service.creator.reviewCount})</span>
           </div>
-          <div className="flex items-center gap-1 text-muted-foreground">
-            <Clock className="h-3 w-3" />
-            <span className="text-xs">{service.minDeliveryDays}d</span>
-          </div>
         </div>
 
-        {/* Level Badge */}
+        {/* Title */}
+        <h3 className="font-medium text-sm line-clamp-2 mb-1 min-h-[1.5rem]">
+          {service.title}
+        </h3>
+
+        {/* Description */}
+        <p className="text-xs text-muted-foreground line-clamp-3 mb-2">
+          {service.description}
+        </p>
+
+        {/* Price & Delivery */}
         <div className="flex items-center justify-between">
-          <Badge 
-            variant="outline" 
-            className={cn(
-              'text-xs',
-              service.creator.level === 'expert' && 'border-primary text-primary',
-              service.creator.level === 'profissional' && 'border-info text-info',
-            )}
-          >
-            {levelLabels[service.creator.level]}
-          </Badge>
           <div className="text-right">
+            <span className="text-xs text-muted-foreground">Entrega em</span>
+            <p className="font-medium text-sm">
+              {service.minDeliveryDays}-{service.minDeliveryDays + 1} dias
+            </p>
+          </div>
+          <div className="text-left">
             <span className="text-xs text-muted-foreground">a partir de</span>
-            <p className="font-display font-semibold text-primary">
+            <p className="font-display font-bold text-lg text-orange-600">
               {formatPrice(service.minPrice)}
             </p>
           </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Star, Clock, Shield, MessageCircle, Heart, Share2, ChevronRight } from 'lucide-react';
 import { MobileLayout } from '@/components/layout/MobileLayout';
@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { mockServices } from '@/data/mockData';
 import { categoryLabels, levelLabels } from '@/data/mockData';
 import { cn } from '@/lib/utils';
+import { trackServiceView, trackServiceInterest } from '@/lib/n8n';
 
 export default function ServiceDetailPage() {
   const { id } = useParams();
@@ -19,6 +20,20 @@ export default function ServiceDetailPage() {
   const [isFavorite, setIsFavorite] = useState(false);
 
   const service = mockServices.find((s) => s.id === id);
+
+  // Track service view when page loads
+  useEffect(() => {
+    if (service) {
+      trackServiceView(service.id);
+    }
+  }, [service]);
+
+  const handleInterest = () => {
+    setIsFavorite(!isFavorite);
+    if (service && !isFavorite) {
+      trackServiceInterest(service.id);
+    }
+  };
 
   if (!service) {
     return (
@@ -50,7 +65,7 @@ export default function ServiceDetailPage() {
               variant="ghost" 
               size="icon" 
               className="h-9 w-9"
-              onClick={() => setIsFavorite(!isFavorite)}
+              onClick={handleInterest}
             >
               <Heart className={cn('h-5 w-5', isFavorite && 'fill-destructive text-destructive')} />
             </Button>
