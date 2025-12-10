@@ -15,11 +15,11 @@ Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
 
 ```env
 # Supabase
-VITE_SUPABASE_URL=https://brqokrchhjcrqcbjybch.supabase.co
+VITE_SUPABASE_URL=supabase_template
 VITE_SUPABASE_ANON_KEY=sua_anon_key
 
 # n8n Webhook
-VITE_N8N_WEBHOOK_URL=https://testeinbazz123.app.n8n.cloud/webhook-test/b55bbed0-22b1-44ef-9696-e910bb7ccaf4
+VITE_N8N_WEBHOOK_URL=webhook_url_n8n
 ```
 
 ### 2. Instalação de Dependências
