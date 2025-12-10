@@ -1,73 +1,119 @@
-# Welcome to your Lovable project
+# Desafio Zzone Bootcamp 2025
 
-## Project info
+Desenvolvimento de uma integração para app Inbazz, criando o Creators Hub, um e-commerce/marketplace interno voltado para Creators, com o objetivo de conectar criadores de conteúdo a serviços especializados, reduzindo fricções operacionais e fortalecendo o ecossistema da plataforma.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Tecnologias Utilizadas:
+### Frontend: Lovable para template, React, Tailwind CSS e Vite como Framework
+### Backend: Supabase
+### Automações: n8n
 
-## How can I edit this code?
+## Configuração para Integração n8n e Supabase
 
-There are several ways of editing your application.
+### 1. Variáveis de Ambiente
 
-**Use Lovable**
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+```env
+# Supabase
+VITE_SUPABASE_URL=https://brqokrchhjcrqcbjybch.supabase.co
+VITE_SUPABASE_ANON_KEY=sua_anon_key
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+# n8n Webhook
+VITE_N8N_WEBHOOK_URL=https://testeinbazz123.app.n8n.cloud/webhook-test/b55bbed0-22b1-44ef-9696-e910bb7ccaf4
 ```
 
-**Edit a file directly in GitHub**
+### 2. Instalação de Dependências
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+npm install @supabase/supabase-js
+```
 
-**Use GitHub Codespaces**
+## Estrutura
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### n8n Webhook (`src/lib/n8n.ts`)
 
-## What technologies are used for this project?
+Sistema de tracking de eventos que envia dados para o n8n via webhook:
 
-This project is built with:
+**Eventos Rastreados:**
+- `service_view` - Quando um serviço é visualizado
+- `service_interest` - Quando o usuário marca interesse (favorito)
+- `checkout_started` - Quando o checkout é iniciado
+- `order_created` - Quando um pedido é criado
+- `search` - Quando uma busca é realizada
+- `filter_applied` - Quando filtros são aplicados
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+**Uso:**
+```typescript
+import { trackServiceView, trackOrderCreated } from '@/lib/n8n';
 
-## How can I deploy this project?
+// Track service view
+trackServiceView(serviceId, userId);
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+// Track order
+trackOrderCreated(orderId, serviceId, packageId, amount, userId);
+```
 
-## Can I connect a custom domain to my Lovable project?
+### Supabase (`src/lib/supabase.ts`)
 
-Yes, you can!
+Cliente configurado para acessar o Supabase:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+**Uso:**
+```typescript
+import { supabase } from '@/lib/supabase';
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+// Query example
+const { data, error } = await supabase
+  .from('services')
+  .select('*')
+  .eq('category', 'edicao-reels');
+```
+
+### Hook useSupabase (`src/hooks/useSupabase.ts`)
+
+Hooks React para facilitar o uso do Supabase:
+
+**useSupabase:**
+```typescript
+const { user, loading, supabase } = useSupabase();
+```
+
+**useSupabaseQuery:**
+```typescript
+const { data, loading, error } = useSupabaseQuery('services', (builder) =>
+  builder.eq('category', 'edicao-reels')
+);
+```
+
+## Eventos Implementados
+
+### ServiceDetailPage
+- ✅ Track ao visualizar serviço
+- ✅ Track ao marcar interesse (favorito)
+
+### CheckoutPage
+- ✅ Track ao iniciar checkout
+- ✅ Track ao criar pedido
+
+### ExplorePage
+- ✅ Track de buscas (com debounce de 500ms)
+- ✅ Track de filtros aplicados
+
+## Estrutura de Dados Enviada ao n8n
+
+```json
+{
+  "event": "service_view",
+  "data": {
+    "serviceId": "1"
+  },
+  "timestamp": "2025-12-07T10:30:00.000Z",
+  "userId": "optional-user-id"
+}
+```
+
+## Próximos Passos
+
+1. **Autenticação**: Implementar login com Supabase Auth
+2. **Banco de Dados**: Criar tabelas no Supabase para serviços, pedidos, etc.
+3. **Real-time**: Usar subscriptions do Supabase para updates em tempo real
+4. **Analytics**: Dashboard de métricas baseado nos eventos do n8n
